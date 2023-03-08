@@ -1,0 +1,147 @@
+Main : 
+Alocam memorie pentru directorul home si pentru numele sau, si il initializam. Facem o copie(parent) a lui home
+unde putem face toate modificarile necesare.
+In do-while, executam comenzile urmatoare :
+Citim o noua linie de la tastatura folosing getline, salvand-o in variabila string.
+Comparam cu strncmp primele 5 caractere din string pentru a vedea daca acestea contin comanda "touch". Daca da,
+facem split folosind strtok : prima data despartind cuvintele separate prin space(comanda si argumentul), apoi 
+atribuindu-i char-ului name al doilea cuvant(argumentul comenzii) care are ca delimintator newline.
+Apelam functia touch avand ca parametrii copia parent si argumentul salvat in name.
+Acelasi principiu il aplicam si pentru comenzile mkdir, rmdir, cd.
+Pentru ls doar comparam cu strncmp si apelam functia ls cu parametrul parent.
+La comanda rm comparam in plus cu strncmp ca primele 5 caractere din string sa fie diferite de rmdir pentru a nu
+se confunda cele 2 comenzi.
+Pentru comanda pwd doar comparam cu strcmp si daca sunt egale afisam rezultatul functiei pwd.
+La comanda mv facem compararea, iar daca primele 2 caractere din string si "mv" sunt egale facem 3 split-uri
+in string: primele 2 cu space pentru a ajunge la primul argument al comemnzii mv si il salvam in oldname, iar
+al doilea cu delimitatorul newline pentru a salva al doilea argument al comenzii mv in variabila newname. Dupa
+aceea apelam functia mv cu parametrii mv, oldname si newname.
+Pentru comanda tree facem compararea cu strcmp si daca cele 2 sunt egale apelam functia tree cu parametrii
+parent si 0 deoarece vrem afisam de la primul nivel al directorului parent.
+Pentru comanda stop facem compararea si daca sunt egale apelam functia stop cu parametrul root deoarece vrem sa
+stergem in stop toata ierarhia de fisiere si directoare.
+De fiecare data cand se revine la inceputul do while-ului se da free la string pentru a putea citi in string o 
+noua linie.
+Executam toate aceste comenzi cat timp in string nu avem comanda stop care incheie executia programului si testam
+acest lucru tot cu ajutorului lui strcmp.
+
+In functia touch:
+Initializam variabila gasit cu 0 in care tinem minte daca exista deja sau nu fisierul cu numele transmis ca 
+argument in name.
+In primul if parcurgem lista de fisiere a directorului curent cat timp lista nu e nula sau nu a ajuns la final.
+Comparam pt fiecare nod daca numele sau si name sunt egale, iar daca sunt inseamna ca exista deja un fisier cu
+numele pe care noi l-am primit, afisam mesajul si ii atribuim lui gasit valoarea 1 si iesim din while cu ajutorul
+lui break. Daca nu sunt egale trecem la urmatorul element din lista de fisiere si repetam compararea.
+Acelasi principiu il folosim pt lista de directoare.
+Daca nu am gasit fisier/director cu acelasi nume(gasit este 0) cream un fisier nou, alocandu-i memorie pentru
+structura si pt nume. Ii atribuim numele name cu strcpy, si ii dam ca parent directorul curent(parent).
+Daca lista de fisiere nu este nula o parcurgem pana la ultimul element si legam ultimul element de fisierul
+nou creat. Daca lista este nula ii atribuim head-ului fisierul nou creat.
+
+In functia mkdir : se aplica aceeasi implementare ca si la functia touch, doar directorul nou creat va fi 
+adaugat in lista de directoare.
+
+In functia ls : 
+Daca lista de directoare a directorului curent nu este nula o parcurgem pana la capat si afisam numele fiecarui
+director retinut in variabila name(dir->name).
+La fel procedam pentru lista de fisiere.
+
+In functia rm:
+Initializam variabila gasit cu 0 in care tinem minte daca exista deja sau nu fisierul cu numele transmis ca 
+argument in name ca sa stim daca avem ce sa stergem.
+Facem o copie a listei de fisiere in variabila file. Daca file nu este nula, comparam cu strcmp daca name si 
+numele headului sunt egale.  Daca da, trecem la urmatorul element din lista si stergem copia head-ului, iar lui
+gasit ii atribuim valoarea 1, iar daca nu comparam pentru urumatoarele elemente din lista de fisiere : luam o 
+noua structura file(prev_file) careia ii atribuim head-ul si cu file ne deplasam la urmatorul element.
+Cat timp file nu este nula, comparam cu strcmp daca name si numele file-ului(fisierul curent din lista) sunt 
+egale. Daca sunt ii atribuim lui gasit 1, facem legatura dintre fisierul anterior(prev_file) si fisierul urmator
+(file->next), dam free la file si iesim din while cu break. Daca nu sunt, trecem la urmatorul element din fisier,
+atat pentru file cat si pentru prev_file.
+Daca nu am gasit fisierul care trebuie sters(gasit este 0) afisam mesajul "Could not find the file".
+
+In functia rmdir:
+Se aplica acelasi principiu ca si in functia rm, doar ca o sa parcurgem lista de directoare.
+
+In functia cd :
+Comparam daca name-ul este egal cu ".." cu functia strcmp, iar daca da verificam daca directorul curent are
+parent nenul, iar daca are trecem de la directorul curent target la parent-ul sau. In caz contrar (name-ul nu 
+este ".." )inseamna ca name-ul este un nume de director. Pe ramura de else initializam gasit cu 0 pentru
+a cauta daca name-ul exista in lista de directoare a directorului curent. Facem o copie a listei de directoare
+si parcurgem fiecare element al ei comparand daca numele elementului(director) coincide cu numele name. Daca da
+ii atribuim lui gasit valoarea 1 si directorului curent(target) o sa devina directorul cu numele name(dirs).
+Daca nu am gasit in lista directorul cu numele name(gasit este 0) afisam mesjaul "No directories found!".
+
+In functia pwd:
+Alocam memorie pt 2 stringuri cale1 si cale2. 
+In cale1 stocam numele directorului target cu functia strcat si inaintam la directorul parent. Luam un contor
+pentru a verifica cum trebuie sa facem concatenarea.
+Cat timp directorul nu este null incrementam contorul. Fiind prima concatenare vom stoca in cale2 directorul
+curent(parentul lui target) si voi concatena numele sau cu numele targetului(stocat in cale1), iar apoi stergem
+ce se afla in cale1. Daca inaintam la urmatorul director parinte, o sa se intre pe a 2a ramura de if si vom
+stoca numele directorului in cale1 si vom concatena cale1 cu cale2(unde avem calea de directorul anterior pana
+la directorul target). Se repeta pana cand ajungem la root(home) acesta neavand parent. La final vom returna
+stringul cale la care am concatenat ultima data calea anterior formata.
+
+Functia mv : 
+In primul while cautam in toata lista de directoare daca exista un director cu numele oldname, iar daca exista
+ii atribuim lui gasit_dir valoarea 1.
+In al doilea while procedam la fel, dar pentru lista de fisiere, iar daca fisierul cu numele oldname este gasit
+ii atribuim lui gasit_file valoarea 1.
+Daca nu exista nici vreun director sau vreun fisier cu numele oldname(gasit_dir si gasit_file vor fi 0) si 
+afisam mesajul "File/Director not found". Altfel daca exista, testam pe acelasi principiu daca exista vreun
+director sau vreun fisier cu numele newname (cu care vrem sa-l inlocuim pe oldname). Daca exista gasit_new
+va deveni 1 si vom afisa mesajul "File/Director already exists". Daca nu exista deja, putem sa facem inlocuirea.
+Testam prima data pentru lista de directoare: facem o copie a listei in variabila dir. Daca s-a gasit directorul
+cu numele oldname(gasit_dir e 1) verificam daca urmatorul element din lista nu e nul, adica daca lista are doar
+un element.
+Daca nu are doar un element, cautam in lista de directoare directorul cu numele oldname, si cand l-am gasit
+facem o copie a lui dir, si ii atribuim cu strcpy numele nou(newname). Stergem cu ajutorul functiei rmdir
+directorul existent cu numele oldname, ca putem sa-l mutam la final. Verificam si pentru ultimul element din
+lista daca acesta are numele oldname, iar la final facem legatura dintre ultimul element din dir si copie_dir
+unde avem directorul cu numele newname.
+Daca lista de directoare are doar un element doar inlocuim numele oldname cu numele newname cu ajutorul lui
+strcpy.
+Acelasi procedeu il repetam si pentru lista de fisiere.
+
+Functia tree:
+Pentru primul copil din lista de directoare a directorului target inaintam recursiv in lista sa de directoare 
+pana cand ajungem la ultimul director si totodata crestem si levelul cu 1. Dupa ce este afisat numele fiecarui
+prim director din fiecare lista, prin apelul recursiv ne intoarcem la nivelul anterior si afisam lista de fisiere
+a fiecarui director afisat. Totodata testam si daca fiecare director afisat are vreun frate si daca da, il afisam
+si mergem recursiv in lista lui de directoare.
+
+Functia stop:
+Am incercat sa eliberez memoria pe acelasi principiu ca la functia tree.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
